@@ -1,8 +1,8 @@
 mod status;
 mod thresholds;
 
-pub use status::MeasurementStatus;
-pub use thresholds::MeasurementThresholds;
+pub use status::Status;
+pub use thresholds::Thresholds;
 
 use std::{fmt, time::Duration};
 
@@ -10,11 +10,11 @@ use std::{fmt, time::Duration};
 pub struct Measurement {
     info: String,
     actual: Duration,
-    thresholds: MeasurementThresholds,
+    thresholds: Thresholds,
 }
 
 impl Measurement {
-    pub fn new(info: String, actual: Duration, thresholds: MeasurementThresholds) -> Self {
+    pub fn new(info: String, actual: Duration, thresholds: Thresholds) -> Self {
         Self {
             info,
             actual,
@@ -30,11 +30,11 @@ impl Measurement {
         self.actual
     }
 
-    pub fn thresholds(&self) -> MeasurementThresholds {
+    pub fn thresholds(&self) -> Thresholds {
         self.thresholds.clone()
     }
 
-    pub fn result(&self) -> MeasurementStatus {
+    pub fn result(&self) -> Status {
         self.thresholds.status(&self.actual)
     }
 }

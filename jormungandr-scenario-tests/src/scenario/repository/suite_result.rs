@@ -1,4 +1,5 @@
-use crate::scenario::repository::{Measurement, ScenarioResult};
+use crate::scenario::repository::ScenarioResult;
+use jormungandr_lib::testing::Measurement;
 
 #[derive(Clone, Debug)]
 pub struct ScenarioSuiteResult {
