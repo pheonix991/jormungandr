@@ -4,17 +4,17 @@ mod thresholds;
 pub use status::Status;
 pub use thresholds::Thresholds;
 
-use std::{fmt, time::Duration};
+use std::{cmp, fmt, time::Duration};
 
 #[derive(Clone, Debug)]
-pub struct Measurement {
+pub struct Measurement<T> {
     info: String,
-    actual: Duration,
-    thresholds: Thresholds,
+    actual: T,
+    thresholds: Thresholds<T>,
 }
 
-impl Measurement {
-    pub fn new(info: String, actual: Duration, thresholds: Thresholds) -> Self {
+impl<T: cmp::PartialOrd + Clone> Measurement<T> {
+    pub fn new(info: String, actual: T, thresholds: Thresholds<T>) -> Self {
         Self {
             info,
             actual,
@@ -26,20 +26,22 @@ impl Measurement {
         self.info.clone()
     }
 
-    pub fn actual(&self) -> Duration {
-        self.actual
+    pub fn actual(&self) -> T {
+        self.actual.clone()
     }
 
-    pub fn thresholds(&self) -> Thresholds {
+    pub fn thresholds(&self) -> Thresholds<T> {
         self.thresholds.clone()
-    }
-
-    pub fn result(&self) -> Status {
-        self.thresholds.status(&self.actual)
     }
 }
 
-impl fmt::Display for Measurement {
+impl Measurement<Duration> {
+    pub fn result(&self) -> Status {
+        self.thresholds().status(self.actual)
+    }
+}
+
+impl fmt::Display for Measurement<Duration> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -47,6 +49,25 @@ impl fmt::Display for Measurement {
             self.info(),
             self.result().to_string(),
             self.actual.as_millis() as f32 / 1000.0,
+            self.thresholds
+        )
+    }
+}
+
+impl Measurement<u64> {
+    pub fn result(&self) -> Status {
+        self.thresholds().status(self.actual)
+    }
+}
+
+impl fmt::Display for Measurement<u64> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Measurement: {}. Result: {}. Actual: {}. Thresholds: {}",
+            self.info(),
+            self.result().to_string(),
+            self.actual,
             self.thresholds
         )
     }
