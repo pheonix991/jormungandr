@@ -12,8 +12,7 @@ use crate::common::{
     jcli_wrapper,
     jormungandr::{JormungandrError, JormungandrProcess},
 };
-use jormungandr_lib::{interfaces::Value, testing::Thresholds};
-use std::time::Duration;
+use jormungandr_lib::interfaces::Value;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -30,6 +29,8 @@ pub enum NodeStuckError {
     },
     #[error("error in logs found")]
     InternalJormungandrError(#[from] JormungandrError),
+    #[error("jcli error")]
+    InternalJcliError(#[from] jcli_wrapper::Error),
 }
 
 pub fn send_transaction_and_ensure_block_was_produced(
@@ -40,7 +41,8 @@ pub fn send_transaction_and_ensure_block_was_produced(
         jcli_wrapper::assert_rest_get_block_tip(&jormungandr.rest_address());
     let block_counter_before_transaction = jormungandr.logger.get_created_blocks_counter();
 
-    jcli_wrapper::assert_all_transactions_in_block(&transation_messages, &jormungandr);
+    jcli_wrapper::send_transactions_and_wait_until_in_block(&transation_messages, &jormungandr)
+        .map_err(|err| NodeStuckError::InternalJcliError(err));
 
     let block_tip_after_transaction =
         jcli_wrapper::assert_rest_get_block_tip(&jormungandr.rest_address());

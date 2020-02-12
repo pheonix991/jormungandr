@@ -10,8 +10,7 @@ use super::NodeStuckError;
 use jormungandr_lib::{
     interfaces::{ActiveSlotCoefficient, KESUpdateSpeed, Value},
     testing::{
-        thresholds_for_transaction_counter, thresholds_for_transaction_duration,
-        thresholds_for_transaction_endurance, Measurement,
+        thresholds_for_transaction_counter, thresholds_for_transaction_endurance, Measurement,
     },
     wallet::Wallet,
 };
@@ -148,7 +147,7 @@ pub fn test_100_transaction_is_processed_simple() {
             thresholds
         )
     );
-    jcli_wrapper::assert_all_transaction_log_shows_in_block(&jormungandr);
+    jcli_wrapper::check_all_transaction_log_shows_in_block(&jormungandr);
 }
 
 fn check_transaction_was_processed(
