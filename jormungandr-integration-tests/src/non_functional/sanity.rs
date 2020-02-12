@@ -6,6 +6,7 @@ use crate::common::{
 };
 use jormungandr_lib::{
     interfaces::{ActiveSlotCoefficient, KESUpdateSpeed, Value},
+    testing::Measurement,
     wallet::Wallet,
 };
 use std::iter;
@@ -16,7 +17,10 @@ pub fn test_100_transaction_is_processed_in_10_packs_to_many_accounts() {
     let receivers: Vec<Wallet> = iter::from_fn(|| Some(startup::create_new_account_address()))
         .take(10)
         .collect();
-    send_100_transaction_in_10_packs_for_recievers(10, receivers)
+    send_and_measure_100_transaction_in_10_packs_for_recievers(
+        receivers,
+        "100_transaction_are_processed_in_10_packs_to_many_accounts",
+    );
 }
 
 #[test]
@@ -25,10 +29,28 @@ pub fn test_100_transaction_is_processed_in_10_packs_to_single_account() {
     let receivers: Vec<Wallet> = iter::from_fn(|| Some(single_reciever.clone()))
         .take(10)
         .collect();
-    send_100_transaction_in_10_packs_for_recievers(10, receivers)
+    send_and_measure_100_transaction_in_10_packs_for_recievers(
+        receivers,
+        "100_transaction_are_processed_in_10_packs_to_single_account",
+    );
 }
 
-fn send_100_transaction_in_10_packs_for_recievers(iterations_count: usize, receivers: Vec<Wallet>) {
+fn send_and_measure_100_transaction_in_10_packs_for_recievers(receivers: Vec<Wallet>, info: &str) {
+    let pack_size = 2;
+    let thresholds =
+        super::thresholds_for_transaction_counter((pack_size * receivers.len()) as u64);
+    let sucessfully_tx_sent_counter =
+        send_100_transaction_in_10_packs_for_recievers(pack_size, receivers) as u64;
+    println!(
+        "{}",
+        Measurement::new(info.to_owned(), sucessfully_tx_sent_counter, thresholds)
+    )
+}
+
+fn send_100_transaction_in_10_packs_for_recievers(
+    iterations_count: usize,
+    receivers: Vec<Wallet>,
+) -> usize {
     let mut sender = startup::create_new_account_address();
     let (jormungandr, _) = startup::start_stake_pool(
         &[sender.clone()],
@@ -41,7 +63,6 @@ fn send_100_transaction_in_10_packs_for_recievers(iterations_count: usize, recei
     .unwrap();
 
     let output_value = 1 as u64;
-
     for i in 0..iterations_count {
         let transation_messages: Vec<String> = receivers
             .iter()
@@ -57,9 +78,17 @@ fn send_100_transaction_in_10_packs_for_recievers(iterations_count: usize, recei
                 message
             })
             .collect();
+
         println!("Sending pack of 10 transaction no. {}", i);
-        super::send_transaction_and_ensure_block_was_produced(&transation_messages, &jormungandr);
+        if let Err(error) = super::send_transaction_and_ensure_block_was_produced(
+            &transation_messages,
+            &jormungandr,
+        ) {
+            println!("Test finished prematurely, due to: {}", error);
+            return i * receivers.len();
+        }
     }
+    iterations_count * receivers.len()
 }
 
 #[test]
