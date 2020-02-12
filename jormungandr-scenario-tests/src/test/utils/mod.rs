@@ -4,12 +4,15 @@ pub use wait::SyncWaitParams;
 
 use crate::{
     node::NodeController,
-    scenario::repository::{Measurement, MeasurementThresholds},
     scenario::Controller,
     test::{ErrorKind, Result},
     wallet::Wallet,
 };
-use jormungandr_lib::{interfaces::FragmentStatus, time::Duration as LibsDuration};
+use jormungandr_lib::{
+    interfaces::FragmentStatus,
+    testing::{Measurement, Thresholds},
+    time::Duration as LibsDuration,
+};
 use std::{
     fmt, thread,
     time::{Duration, SystemTime},
@@ -37,11 +40,11 @@ pub fn get_nodes_block_height_summary(nodes: Vec<&NodeController>) -> Vec<String
 
 pub fn measure_sync_time(
     nodes: Vec<&NodeController>,
-    sync_wait: MeasurementThresholds,
+    sync_wait: Thresholds<Duration>,
     info: &str,
 ) -> Measurement {
     let now = SystemTime::now();
-    while now.elapsed().unwrap() < sync_wait.timeout() {
+    while now.elapsed().unwrap() < sync_wait.max() {
         let block_heights: Vec<u32> = nodes
             .iter()
             .map(|node| {

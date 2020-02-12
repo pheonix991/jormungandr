@@ -1,6 +1,7 @@
 use crate::{
     node::{LeadershipMode, PersistenceMode},
     scenario::repository::ScenarioResult,
+    test::utils::SyncWaitParams,
     test::{non_functional::*, utils, Result},
     Context,
 };
