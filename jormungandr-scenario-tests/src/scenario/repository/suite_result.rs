@@ -1,6 +1,6 @@
 use crate::scenario::repository::ScenarioResult;
 use jormungandr_lib::testing::Measurement;
-
+use std::time::Duration;
 #[derive(Clone, Debug)]
 pub struct ScenarioSuiteResult {
     results: Vec<ScenarioResult>,
@@ -18,7 +18,7 @@ impl ScenarioSuiteResult {
     }
 
     pub fn print_measurements_results(&self) {
-        let mut measurements: Vec<Measurement> = Vec::new();
+        let mut measurements: Vec<Measurement<Duration>> = Vec::new();
         for scenario_result in self.results.iter() {
             measurements.extend(scenario_result.measurements.iter().cloned());
         }

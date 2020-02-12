@@ -2,12 +2,12 @@ use crate::{
     scenario::repository::{Measurement, ScenarioStatus},
     test::Result,
 };
-use std::{any::Any, fmt};
+use std::{any::Any, fmt, time::Duration};
 
 #[derive(Clone, Debug)]
 pub struct ScenarioResult {
     pub scenario_status: ScenarioStatus,
-    pub measurements: Vec<Measurement>,
+    pub measurements: Vec<Measurement<Duration>>,
 }
 
 impl ScenarioResult {
@@ -18,7 +18,7 @@ impl ScenarioResult {
         }
     }
 
-    pub fn passed_with_measurements(measurements: Vec<Measurement>) -> Self {
+    pub fn passed_with_measurements(measurements: Vec<Measurement<Duration>>) -> Self {
         ScenarioResult {
             scenario_status: ScenarioStatus::Passed,
             measurements: measurements,
@@ -36,11 +36,11 @@ impl ScenarioResult {
         &self.scenario_status
     }
 
-    pub fn add_measurement(&mut self, measurement: Measurement) {
+    pub fn add_measurement(&mut self, measurement: Measurement<Duration>) {
         self.measurements.push(measurement);
     }
 
-    pub fn measurements(&self) -> Vec<Measurement> {
+    pub fn measurements(&self) -> Vec<Measurement<Duration>> {
         self.measurements.clone()
     }
 
