@@ -8,8 +8,11 @@ Long running test for self node (48 h)
 */
 pub mod soak;
 
-use crate::common::{jcli_wrapper, jormungandr::JormungandrProcess};
-use jormungandr_lib::testing::Thresholds;
+use crate::common::{
+    jcli_wrapper,
+    jormungandr::{JormungandrError, JormungandrProcess},
+};
+use jormungandr_lib::{interfaces::Value, testing::Thresholds};
 use std::time::Duration;
 use thiserror::Error;
 
@@ -19,20 +22,14 @@ pub enum NodeStuckError {
     TipIsNotMoving { tip_hash: String, logs: String },
     #[error("node block counter is not moving up. Stuck at {block_counter}")]
     BlockCounterIsNoIncreased { block_counter: u64, logs: String },
-}
-
-pub fn thresholds_for_transaction_counter(counter: u64) -> Thresholds<u64> {
-    let green = (counter / 2) as u64;
-    let yellow = (counter / 3) as u64;
-    let red = (counter / 4) as u64;
-    Thresholds::<u64>::new(green, yellow, red, counter)
-}
-
-pub fn thresholds_for_transaction_send_by_duration(duration: Duration) -> Thresholds<Duration> {
-    let green = Duration::from_secs(duration.as_secs() / 2);
-    let yellow = Duration::from_secs(duration.as_secs() / 3);
-    let red = Duration::from_secs(duration.as_secs() / 4);
-    Thresholds::<Duration>::new(green, yellow, red, duration)
+    #[error("accounts funds were not trasfered (actual: {actual} vs expected: {expected})")]
+    FundsNotTransfered {
+        actual: Value,
+        expected: Value,
+        logs: String,
+    },
+    #[error("error in logs found")]
+    InternalJormungandrError(#[from] JormungandrError),
 }
 
 pub fn send_transaction_and_ensure_block_was_produced(
