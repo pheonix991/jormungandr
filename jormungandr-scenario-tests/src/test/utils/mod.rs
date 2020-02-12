@@ -38,11 +38,11 @@ pub fn get_nodes_block_height_summary(nodes: Vec<&NodeController>) -> Vec<String
         .collect()
 }
 
-pub fn measure_sync_time(
+pub fn measure_and_log_sync_time(
     nodes: Vec<&NodeController>,
     sync_wait: Thresholds<Duration>,
     info: &str,
-) -> Measurement<Duration> {
+) {
     let now = SystemTime::now();
     while now.elapsed().unwrap() < sync_wait.max() {
         let block_heights: Vec<u32> = nodes
@@ -58,13 +58,27 @@ pub fn measure_sync_time(
             .collect();
         let max_block_height = block_heights.iter().max().unwrap();
         if !block_heights.iter().any(|x| *x != *max_block_height) {
-            return Measurement::new(info.to_owned(), now.elapsed().unwrap(), sync_wait.clone());
+            log_measurement(Measurement::new(
+                info.to_owned(),
+                now.elapsed().unwrap(),
+                sync_wait.clone(),
+            ));
+            return;
         }
     }
 
-    // if we know it fails, this method is used only for reporting
+    // we know it fails, this method is used only for reporting
     assert_are_in_sync(SyncWaitParams::ZeroWait, nodes);
-    Measurement::new(info.to_owned(), now.elapsed().unwrap(), sync_wait.clone())
+    log_measurement(Measurement::new(
+        info.to_owned(),
+        now.elapsed().unwrap(),
+        sync_wait.clone(),
+    ))
+}
+
+///temporary method for logging measurement which is currently printing content to console
+fn log_measurement(measurement: Measurement<Duration>) {
+    println!("{}", measurement);
 }
 
 pub fn assert_equals<A: fmt::Debug + PartialEq>(left: &A, right: &A, info: &str) -> Result<()> {

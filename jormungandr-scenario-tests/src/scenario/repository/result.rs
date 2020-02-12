@@ -7,41 +7,23 @@ use std::{any::Any, fmt, time::Duration};
 #[derive(Clone, Debug)]
 pub struct ScenarioResult {
     pub scenario_status: ScenarioStatus,
-    pub measurements: Vec<Measurement<Duration>>,
 }
 
 impl ScenarioResult {
     pub fn passed() -> Self {
         ScenarioResult {
             scenario_status: ScenarioStatus::Passed,
-            measurements: vec![],
-        }
-    }
-
-    pub fn passed_with_measurements(measurements: Vec<Measurement<Duration>>) -> Self {
-        ScenarioResult {
-            scenario_status: ScenarioStatus::Passed,
-            measurements: measurements,
         }
     }
 
     pub fn failed<S: Into<String>>(reason: S) -> Self {
         ScenarioResult {
             scenario_status: ScenarioStatus::Failed(reason.into()),
-            measurements: vec![],
         }
     }
 
     pub fn scenario_status(&self) -> &ScenarioStatus {
         &self.scenario_status
-    }
-
-    pub fn add_measurement(&mut self, measurement: Measurement<Duration>) {
-        self.measurements.push(measurement);
-    }
-
-    pub fn measurements(&self) -> Vec<Measurement<Duration>> {
-        self.measurements.clone()
     }
 
     pub fn is_failed(&self) -> bool {

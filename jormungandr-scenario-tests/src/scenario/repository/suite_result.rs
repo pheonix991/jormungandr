@@ -13,21 +13,6 @@ impl ScenarioSuiteResult {
         }
     }
 
-    pub fn any_measurements(&self) -> bool {
-        self.results.iter().any(|x| !x.measurements().is_empty())
-    }
-
-    pub fn print_measurements_results(&self) {
-        let mut measurements: Vec<Measurement<Duration>> = Vec::new();
-        for scenario_result in self.results.iter() {
-            measurements.extend(scenario_result.measurements.iter().cloned());
-        }
-
-        for measurement in measurements {
-            println!("{}", measurement);
-        }
-    }
-
     pub fn push(&mut self, result: ScenarioResult) {
         self.results.push(result)
     }

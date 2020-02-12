@@ -66,7 +66,7 @@ pub fn two_transaction_to_two_leaders_block_sync(
         wallet2.confirm_transaction();
     }
 
-    let measurement = utils::measure_sync_time(
+    utils::measure_and_log_sync_time(
         vec![&leader_1, &leader_2],
         SyncWaitParams::two_nodes().into(),
         "two_transaction_to_two_leaders_block_sync",
@@ -75,7 +75,7 @@ pub fn two_transaction_to_two_leaders_block_sync(
     leader_1.shutdown()?;
     leader_2.shutdown()?;
     controller.finalize();
-    Ok(ScenarioResult::passed_with_measurements(vec![measurement]))
+    Ok(ScenarioResult::passed())
 }
 
 pub fn point_to_point_block_sync(mut context: Context<ChaChaRng>) -> Result<ScenarioResult> {
@@ -128,7 +128,7 @@ pub fn point_to_point_block_sync(mut context: Context<ChaChaRng>) -> Result<Scen
         &leader1,
     )?;
 
-    let measurement = utils::measure_sync_time(
+    utils::measure_and_log_sync_time(
         vec![&leader1, &leader2, &leader3, &leader4],
         SyncWaitParams::network_size(4, 4).into(),
         "point_to_point_block_sync",
@@ -140,5 +140,5 @@ pub fn point_to_point_block_sync(mut context: Context<ChaChaRng>) -> Result<Scen
     leader1.shutdown()?;
 
     controller.finalize();
-    Ok(ScenarioResult::passed_with_measurements(vec![measurement]))
+    Ok(ScenarioResult::passed())
 }

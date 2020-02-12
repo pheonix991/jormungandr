@@ -98,7 +98,7 @@ pub fn mesh_disruption(mut context: Context<ChaChaRng>) -> Result<ScenarioResult
         &leader3,
     )?;
 
-    let measurement = utils::measure_sync_time(
+    utils::measure_and_log_sync_time(
         vec![&leader1, &leader2, &leader3, &leader4, &leader5],
         SyncWaitParams::nodes_restart(5).into(),
         "mesh_disruption_sync",
@@ -109,5 +109,5 @@ pub fn mesh_disruption(mut context: Context<ChaChaRng>) -> Result<ScenarioResult
     leader3.shutdown()?;
     leader2.shutdown()?;
     leader1.shutdown()?;
-    Ok(ScenarioResult::passed_with_measurements(vec![measurement]))
+    Ok(ScenarioResult::passed())
 }
